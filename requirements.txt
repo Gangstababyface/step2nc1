@@ -1,0 +1,3 @@
+# step2nc1 has no third-party Python dependencies.
+# Tkinter ships with the Python standard library on Windows, macOS, and most Linux.
+# Tested on Python 3.9+

@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Local artefacts - keep the project clean of generated NC1s
+examples/*.nc1
+*.nc1.bak
