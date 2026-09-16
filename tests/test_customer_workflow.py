@@ -14,15 +14,16 @@ from test_conversion import analyze,beam
 
 def test_recovery_preserves_unapplied_text_and_excludes_live_sessions(tmp_path):
     a=RecoveryStore(tmp_path);b=RecoveryStore(tmp_path)
+    original=str((tmp_path/'original.step').resolve())
     try:
-        a.save(analyze(beam()),NC1Header(),'/parts/original.step',{'quantity':'unfinished edit','steel_quality':'A36'})
+        a.save(analyze(beam()),NC1Header(),original,{'quantity':'unfinished edit','steel_quality':'A36'})
         assert b.available()==[]
         a.close()
         available=b.available();assert len(available)==1
         path,data=available[0]
         assert data['recovery']['form']['quantity']=='unfinished edit'
         fs,_,source=load_project(path)
-        assert fs.section.family=='W' and source=='/parts/original.step'
+        assert fs.section.family=='W' and source==original
         b.discard_path(path);assert b.available()==[]
     finally:a.close();b.close(discard=True)
 
