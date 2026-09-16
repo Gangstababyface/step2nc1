@@ -1,15 +1,15 @@
-__pycache__/
-*.py[cod]
-*.egg-info/
 .venv/
-venv/
-.env
-.idea/
-.vscode/
-*.swp
-.DS_Store
-Thumbs.db
+__pycache__/
+*.pyc
+.pytest_cache/
+build/
+dist/
+*.egg-info/
 
-# Local artefacts - keep the project clean of generated NC1s
-examples/*.nc1
-*.nc1.bak
+converted_samples/
+validation/
+installer-evidence/
+*-installation-check.json
+installation-check.json
+startup-log.txt
+validation-log.txt

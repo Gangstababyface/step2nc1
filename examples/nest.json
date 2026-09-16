@@ -1,0 +1,12 @@
+{
+  "name": "NEST_001",
+  "run": "RUN_001",
+  "machine": 1,
+  "bars": 1,
+  "stock_length_mm": 2500,
+  "kerf_mm": 3,
+  "front_trim_mm": 10,
+  "end_trim_mm": 20,
+  "filler_mm": 0,
+  "parts": [{"file": "beam.nc1", "quantity": 2, "rotation": ""}]
+}

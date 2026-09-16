@@ -14,7 +14,7 @@ DSTV_CODE = {
     "C": "U",     # U-channel
     "L": "L",     # equal/unequal leg angle
     "HSS": "M",   # rectangular hollow (Mannesmann)
-    "HSS_R": "RU",  # round hollow (rohr-rund)
+    "HSS_R": "RO",  # round hollow (rohr-rund)
     "PLATE": "B", # plate / flat bar
 }
 
@@ -31,6 +31,7 @@ class Profile:
     k: float             # fillet radius (inches)
     weight_per_ft: float
     dstv_code: str
+    outside_radius: float = 0.0  # inches, optional HSS external corner radius
 
     @property
     def d_mm(self) -> float: return self.d * 25.4
@@ -45,7 +46,7 @@ class Profile:
     @property
     def k_mm(self) -> float: return self.k * 25.4
     @property
-    def kg_per_m(self) -> float: return self.weight_per_ft * 1.488
+    def kg_per_m(self) -> float: return self.weight_per_ft * 1.48816394
 
 
 def load_profiles(path: Optional[str] = None) -> List[Profile]:
@@ -106,6 +107,15 @@ def match_profile(family: str, depth_in: float, width_in: float,
             best = p
     if best is None:
         return None
+    # All measured dimensions must match: a correct envelope with a wrong
+    # wall thickness is a different section.
+    pairs = [(best.d, depth_in), (best.bf, width_in)]
+    if family in ("W", "C"):
+        pairs += [(best.tf, flange_in), (best.tw, web_in)]
+    elif family in ("L", "HSS"):
+        pairs += [(best.t_wall, wall_in)]
+    if any(measured > 0 and abs(nominal-measured) > tol_in for nominal, measured in pairs):
+        return None
     # accept only if reasonably close on depth/width
     if abs(best.d - depth_in) > tol_in * max(2.0, depth_in / 4) or \
        abs(best.bf - width_in) > tol_in * max(2.0, width_in / 4):
@@ -126,6 +136,8 @@ def make_custom_profile(family: str, d: float, bf: float, tf: float = 0.0,
         name = f"L{d:.2f}X{bf:.2f}X{t_wall:.3f}".replace(".000", "").replace(".", "_")
     elif family == "HSS":
         name = f"HSS{d:.2f}X{bf:.2f}X{t_wall:.3f}".replace(".000", "").replace(".", "_")
+    elif family == "HSS_R":
+        name = f"PIPE{d:.4f}X{t_wall:.4f}"
     else:
         name = f"PL{d:.2f}X{bf:.2f}"
     # estimate weight from cross-section area * 0.2836 lb/in^3 * 12 in/ft
@@ -137,6 +149,8 @@ def make_custom_profile(family: str, d: float, bf: float, tf: float = 0.0,
         area = t_wall * (d + bf - t_wall)
     elif family == "HSS":
         area = bf * d - (bf - 2 * t_wall) * (d - 2 * t_wall)
+    elif family == "HSS_R":
+        area=math.pi/4*(d*d-(d-2*t_wall)**2)
     else:
         area = bf * d
     weight_per_ft = max(area, 0.0) * 0.2836 * 12.0

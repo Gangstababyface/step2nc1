@@ -1,0 +1,361 @@
+{
+  "schema": "step2nc1-project",
+  "version": 1,
+  "source": "beam.step",
+  "header": {
+    "order_number": "",
+    "drawing_number": "beam",
+    "phase_number": "1",
+    "piece_number": "beam",
+    "steel_quality": "A992",
+    "quantity": 1,
+    "profile_name": "",
+    "profile_code": "",
+    "code_text": "",
+    "text_info_1": "Source: beam.step",
+    "text_info_2": "",
+    "text_info_3": "",
+    "text_info_4": "",
+    "saw_length_mm": null,
+    "paint_per_m": null,
+    "weight_per_m": null
+  },
+  "features": {
+    "section": {
+      "family": "W",
+      "profile": {
+        "name": "W7_87X3_94",
+        "family": "W",
+        "d": 7.874015748031496,
+        "bf": 3.937007874015748,
+        "tf": 0.3937007874015748,
+        "tw": 0.2362204724409449,
+        "t_wall": 0.0,
+        "k": 0.0,
+        "weight_per_ft": 16.246865919893217,
+        "dstv_code": "I",
+        "outside_radius": 0.0
+      },
+      "length_axis": 0,
+      "length_dir_sign": 1,
+      "length_in": 39.37007874015748,
+      "bbox": {
+        "minp": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "maxp": {
+          "x": 39.37007874015748,
+          "y": 7.874015748031496,
+          "z": 3.937007874015748
+        }
+      },
+      "cross_polys": [
+        [
+          {
+            "x": 3.937007874015748,
+            "y": 0.0
+          },
+          {
+            "x": 3.937007874015748,
+            "y": 0.3937007874015748
+          },
+          {
+            "x": 2.0866141732283467,
+            "y": 0.3937007874015748
+          },
+          {
+            "x": 2.0866141732283467,
+            "y": 7.480314960629921
+          },
+          {
+            "x": 3.937007874015748,
+            "y": 7.480314960629921
+          },
+          {
+            "x": 3.937007874015748,
+            "y": 7.874015748031496
+          },
+          {
+            "x": 0.0,
+            "y": 7.874015748031496
+          },
+          {
+            "x": 0.0,
+            "y": 7.480314960629921
+          },
+          {
+            "x": 1.8503937007874016,
+            "y": 7.480314960629921
+          },
+          {
+            "x": 1.8503937007874016,
+            "y": 0.3937007874015748
+          },
+          {
+            "x": 0.0,
+            "y": 0.3937007874015748
+          },
+          {
+            "x": 0.0,
+            "y": 0.0
+          },
+          {
+            "x": 3.937007874015748,
+            "y": 0.0
+          }
+        ]
+      ],
+      "notes": "Measured custom profile.",
+      "frame": {
+        "source_to_part_mm": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            -0.0
+          ],
+          [
+            0,
+            0,
+            0,
+            1
+          ]
+        ],
+        "length_axis_source": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "depth_axis_source": [
+          0.0,
+          1.0,
+          0.0
+        ],
+        "width_axis_source": [
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      "paint_per_m": 0.788
+    },
+    "holes": [],
+    "outer_contour": [],
+    "inner_contours": [],
+    "markings": [],
+    "end_cuts": {
+      "web_start_deg": 0.0,
+      "web_end_deg": 0.0,
+      "flange_start_deg": 0.0,
+      "flange_end_deg": 0.0
+    },
+    "outer_contours": [
+      [
+        {
+          "surface": "v",
+          "x_mm": 0.0,
+          "y_mm": 0.0,
+          "radius_mm": 0.0,
+          "reference": "u",
+          "modifier": "",
+          "bevel_angle_1": 0.0,
+          "bevel_depth_1": 0.0,
+          "bevel_angle_2": 0.0,
+          "bevel_depth_2": 0.0
+        },
+        {
+          "surface": "v",
+          "x_mm": 1000.0,
+          "y_mm": 0.0,
+          "radius_mm": 0.0,
+          "reference": "u",
+          "modifier": "",
+          "bevel_angle_1": 0.0,
+          "bevel_depth_1": 0.0,
+          "bevel_angle_2": 0.0,
+          "bevel_depth_2": 0.0
+        },
+        {
+          "surface": "v",
+          "x_mm": 1000.0,
+          "y_mm": 200.0,
+          "radius_mm": 0.0,
+          "reference": "u",
+          "modifier": "",
+          "bevel_angle_1": 0.0,
+          "bevel_depth_1": 0.0,
+          "bevel_angle_2": 0.0,
+          "bevel_depth_2": 0.0
+        },
+        {
+          "surface": "v",
+          "x_mm": 0.0,
+          "y_mm": 200.0,
+          "radius_mm": 0.0,
+          "reference": "u",
+          "modifier": "",
+          "bevel_angle_1": 0.0,
+          "bevel_depth_1": 0.0,
+          "bevel_angle_2": 0.0,
+          "bevel_depth_2": 0.0
+        },
+        {
+          "surface": "v",
+          "x_mm": 0.0,
+          "y_mm": 0.0,
+          "radius_mm": 0,
+          "reference": "u",
+          "modifier": "",
+          "bevel_angle_1": 0.0,
+          "bevel_depth_1": 0.0,
+          "bevel_angle_2": 0.0,
+          "bevel_depth_2": 0.0
+        }
+      ],
+      [
+        {
+          "surface": "o",
+          "x_mm": 0.0,
+          "y_mm": 100.0,
+          "radius_mm": -0.0,
+          "reference": "u",
+          "modifier": "",
+          "bevel_angle_1": 0.0,
+          "bevel_depth_1": 0.0,
+          "bevel_angle_2": 0.0,
+          "bevel_depth_2": 0.0
+        },
+        {
+          "surface": "o",
+          "x_mm": 0.0,
+          "y_mm": 0.0,
+          "radius_mm": -0.0,
+          "reference": "u",
+          "modifier": "",
+          "bevel_angle_1": 0.0,
+          "bevel_depth_1": 0.0,
+          "bevel_angle_2": 0.0,
+          "bevel_depth_2": 0.0
+        },
+        {
+          "surface": "o",
+          "x_mm": 1000.0,
+          "y_mm": 0.0,
+          "radius_mm": -0.0,
+          "reference": "u",
+          "modifier": "",
+          "bevel_angle_1": 0.0,
+          "bevel_depth_1": 0.0,
+          "bevel_angle_2": 0.0,
+          "bevel_depth_2": 0.0
+        },
+        {
+          "surface": "o",
+          "x_mm": 1000.0,
+          "y_mm": 100.0,
+          "radius_mm": -0.0,
+          "reference": "u",
+          "modifier": "",
+          "bevel_angle_1": 0.0,
+          "bevel_depth_1": 0.0,
+          "bevel_angle_2": 0.0,
+          "bevel_depth_2": 0.0
+        },
+        {
+          "surface": "o",
+          "x_mm": 0.0,
+          "y_mm": 100.0,
+          "radius_mm": 0,
+          "reference": "u",
+          "modifier": "",
+          "bevel_angle_1": 0.0,
+          "bevel_depth_1": 0.0,
+          "bevel_angle_2": 0.0,
+          "bevel_depth_2": 0.0
+        }
+      ],
+      [
+        {
+          "surface": "u",
+          "x_mm": 0.0,
+          "y_mm": 100.0,
+          "radius_mm": -0.0,
+          "reference": "u",
+          "modifier": "",
+          "bevel_angle_1": 0.0,
+          "bevel_depth_1": 0.0,
+          "bevel_angle_2": 0.0,
+          "bevel_depth_2": 0.0
+        },
+        {
+          "surface": "u",
+          "x_mm": 0.0,
+          "y_mm": 0.0,
+          "radius_mm": -0.0,
+          "reference": "u",
+          "modifier": "",
+          "bevel_angle_1": 0.0,
+          "bevel_depth_1": 0.0,
+          "bevel_angle_2": 0.0,
+          "bevel_depth_2": 0.0
+        },
+        {
+          "surface": "u",
+          "x_mm": 1000.0,
+          "y_mm": 0.0,
+          "radius_mm": -0.0,
+          "reference": "u",
+          "modifier": "",
+          "bevel_angle_1": 0.0,
+          "bevel_depth_1": 0.0,
+          "bevel_angle_2": 0.0,
+          "bevel_depth_2": 0.0
+        },
+        {
+          "surface": "u",
+          "x_mm": 1000.0,
+          "y_mm": 100.0,
+          "radius_mm": -0.0,
+          "reference": "u",
+          "modifier": "",
+          "bevel_angle_1": 0.0,
+          "bevel_depth_1": 0.0,
+          "bevel_angle_2": 0.0,
+          "bevel_depth_2": 0.0
+        },
+        {
+          "surface": "u",
+          "x_mm": 0.0,
+          "y_mm": 100.0,
+          "radius_mm": 0,
+          "reference": "u",
+          "modifier": "",
+          "bevel_angle_1": 0.0,
+          "bevel_depth_1": 0.0,
+          "bevel_angle_2": 0.0,
+          "bevel_depth_2": 0.0
+        }
+      ]
+    ],
+    "powder_contours": [],
+    "scribe_contours": [],
+    "warnings": [],
+    "errors": [],
+    "comments": [],
+    "extra_blocks": []
+  }
+}
