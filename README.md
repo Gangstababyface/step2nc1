@@ -1,4 +1,4 @@
-# STEP2NC1 — 1.2.0-rc3
+# STEP2NC1 — 1.3.0-rc1
 
 A Windows-friendly desktop editor and command-line converter for individual,
 straight structural members. Uses Open CASCADE through CadQuery for STEP units,
@@ -8,6 +8,19 @@ placements, solid topology, and exact line/circular-arc geometry.
 application, receiving CAM and physical acceptance remain pending. See
 [release gates](docs/RELEASE-GATES.md) before distribution. Regenerate any round-stock
 outputs from older versions; the round-section classifier has been corrected.
+
+## STEP to IGES
+
+Use **STEP to IGES** in the toolbar, choose one or more original STEP files, then choose an output folder. The result is `.igs` geometry suitable for testing with the IGES/IGS importer in the supplied TubesT dialog. This operation does not depend on the NC1 profile detector and preserves the source model position and scale. The current NC1 editor's changes are not applied.
+
+Export uses IGES B-rep mode in millimetres. Every result is reopened and checked for valid geometry, solid count, bounds, area and volume before publication. Original colors, assembly names, fabrication metadata and machining instructions are not preserved. The receiving TubesT importer still needs an acceptance check; an internal readback does not establish compatibility with every CAD importer.
+
+```bat
+STEP2NC1-cli.exe "part.step" --format iges -o "C:\Jobs\IGES"
+STEP2NC1-cli.exe "C:\Jobs\STEP" --recursive --format iges -o "C:\Jobs\IGES" --report iges-report.json
+```
+
+Supported outputs are NC1 and IGES. SAT, IFC, STEPX and proprietary TubesT/Tekla/PCD/Excel imports are not claimed as exports. They require their own format specifications, SDKs or importer-specific templates.
 
 ## Customer installation
 

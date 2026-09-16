@@ -45,6 +45,13 @@ def run(argv=None):
             if len(saved.holes)!=1 or header.steel_quality!='TEST':raise RuntimeError('Saved project readback failed.')
             return 'STEP import, isolated worker, NC1 export/readback and saved project passed.'
         converted=check('End-to-end CAD conversion',conversion)
+        def iges_conversion():
+            from core.conversion import isolated_convert
+            result=isolated_convert(source,directory/'installation-test.igs',output_format='iges')
+            if result.get('status')!='ok':raise RuntimeError(result.get('error','IGES conversion failed.'))
+            if result.get('readback')!='passed':raise RuntimeError('IGES readback did not pass.')
+            return 'STEP to IGES worker, solid count, area, volume and model bounds readback passed.'
+        check('IGES conversion',iges_conversion)
         def desktop():
             if not converted:raise RuntimeError('Resolve the CAD conversion failure first.')
             import tkinter as tk
@@ -77,8 +84,16 @@ def run(argv=None):
                     while app.busy and time.monotonic()<deadline:root.update();time.sleep(.01)
                     if app.busy:raise RuntimeError('Desktop cancellation did not finish.')
                     root.update()
+                    iges_directory=directory/'gui-iges';iges_directory.mkdir()
+                    reports=[]
+                    with patch('gui.app.filedialog.askopenfilenames',return_value=(str(source),)),patch('gui.app.filedialog.askdirectory',return_value=str(iges_directory)),patch.object(app,'batch_results',side_effect=lambda path:reports.append(path)):
+                        app.export_iges();deadline=time.monotonic()+30
+                        while app.busy and time.monotonic()<deadline:root.update();time.sleep(.01)
+                    if app.busy or not reports:raise RuntimeError('Desktop IGES action did not finish.')
+                    result=json.loads(reports[0].read_text())
+                    if result['converted']!=1 or not (iges_directory/'installation-test.igs').is_file():raise RuntimeError('Desktop IGES export failed.')
                     if callback_errors:raise RuntimeError('; '.join(callback_errors))
-                    return 'Desktop opened, displayed the part, edited quantity, saved/reopened, exported, autosaved and cancelled a job.'
+                    return 'Desktop opened, displayed the part, edited quantity, saved/reopened, exported, autosaved, cancelled a job and exported IGES through the desktop action.'
                 finally:
                     if app:app.finish_close()
                     else:root.destroy()

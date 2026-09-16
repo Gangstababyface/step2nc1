@@ -1,6 +1,6 @@
 # STEP2NC1 quick start
 
-Version 1.2.0-rc3 — release candidate. Complete the checks in RELEASE-GATES.md before customer distribution or production use.
+Version 1.3.0-rc1 — release candidate. Complete the checks in RELEASE-GATES.md before customer distribution or production use.
 
 ## Install and open
 
@@ -9,6 +9,12 @@ Open `STEP2NC1-Setup.exe` and click **Install**. The installer contains the Pyth
 Open STEP2NC1 from its shortcut on subsequent runs. Windows Settings → Apps → STEP2NC1 → Uninstall removes the program. Saved projects and recovery data are retained.
 
 Open one STEP part. Confirm stock designation, dimensions, quantity, grade, orientation and every face preview. Read any analysis issues. Save a `.step2nc.json` project to preserve edits, then export NC1 when validation passes. Import the NC1 in the receiving software and compare with original CAD before cutting.
+
+## Export STEP geometry for IGES/IGS import
+
+Click **STEP to IGES**. Select one or more original STEP models and choose the output folder. Open the resulting `.igs` file using the receiving program's IGES/IGS filter. Review the results dialog for any failed models.
+
+This is an export of the original STEP geometry. It can handle shapes outside NC1's supported profile/machining scope, including valid curved parts and multi-solid geometry. Edits made in the NC1 editor are not included. Color, assembly names and fabrication metadata are not preserved. Confirm dimensions and part orientation in the receiving program.
 
 ## Batch work
 

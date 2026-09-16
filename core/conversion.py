@@ -13,8 +13,8 @@ class ConversionError(ValueError):
         self.result=row
 
 
-def isolated_convert(path,out,material=None,quantity=None,length_axis='auto',force=False,project=False,timeout=120,cancel_event=None):
-    data=dict(path=str(path),out=str(out),material=material,quantity=quantity,length_axis=length_axis,force=force,project=project)
+def isolated_convert(path,out,material=None,quantity=None,length_axis='auto',force=False,project=False,timeout=120,cancel_event=None,output_format='nc1'):
+    data=dict(path=str(path),out=str(out),material=material,quantity=quantity,length_axis=length_axis,force=force,project=project,output_format=output_format)
     worker=Path(__file__).resolve().parents[1]/'scripts'/'convert_worker.py'
     row={'source':str(path),'output':str(out),'status':'error'}
     if cancel_event is not None and cancel_event.is_set():

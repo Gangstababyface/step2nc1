@@ -54,7 +54,7 @@ class App:
         style.configure('TButton',padding=(10,5));style.configure('Treeview',rowheight=25)
         bar=ttk.Frame(self.root,padding=8);bar.pack(fill='x')
         self.buttons=[]
-        for text,cmd in [('Open',self.open_file),('Save project',self.save),('Export NC1',self.export),('Batch convert',self.batch)]:
+        for text,cmd in [('Open',self.open_file),('Save project',self.save),('Export NC1',self.export),('Batch NC1',self.batch),('STEP to IGES',self.export_iges)]:
             b=ttk.Button(bar,text=text,command=cmd);b.pack(side='left',padx=3);self.buttons.append(b)
         self.cancel_button=ttk.Button(bar,text='Cancel',command=self.cancel_job,state='disabled');self.cancel_button.pack(side='left',padx=3)
         ttk.Button(bar,text='Recover draft',command=self.offer_recovery).pack(side='left',padx=3)
@@ -315,6 +315,17 @@ class App:
         path=self.source;axis=self.vars['axis'].get()
         self.run_job(lambda:(*self.analyze(path,axis,self.cancel_event),None),self.loaded)
 
+    def export_iges(self):
+        if self.busy:return
+        paths=filedialog.askopenfilenames(title='Select original STEP models for IGES export',filetypes=[('STEP','*.step *.stp *.STEP *.STP')])
+        if not paths:return
+        output=filedialog.askdirectory(title='Save IGES geometry files')
+        if not output:return
+        from main import cli_convert
+        report=Path(output)/'iges-report.json'
+        self.run_job(lambda:cli_convert(paths,output,report=report,cancel_event=self.cancel_event,output_format='iges'),
+                     lambda result:self.batch_results(report),show_cancelled=True)
+
     def batch(self):
         if self.busy:return
         paths=filedialog.askopenfilenames(filetypes=[('STEP','*.step *.stp *.STEP *.STP')])
@@ -358,7 +369,9 @@ class App:
             if not draft or not draft.is_file():messagebox.showinfo('No draft','Section analysis did not produce an editable draft for this file.',parent=top);return
             if self.confirm_discard():self.loaded((*load_project(draft),str(draft)));top.destroy()
         tree.bind('<<TreeviewSelect>>',show)
-        ttk.Button(top,text='Review selected draft',command=review).pack(side='left',padx=10,pady=8)
+        if data.get('format','nc1')=='nc1':
+            ttk.Button(top,text='Review selected draft',command=review).pack(side='left',padx=10,pady=8)
+        else:ttk.Label(top,text='IGES contains the original STEP geometry. NC1 editor changes are not included.').pack(side='left',padx=10,pady=8)
         ttk.Button(top,text='Close',command=top.destroy).pack(side='right',padx=10,pady=8)
 
     def choose_profile(self):

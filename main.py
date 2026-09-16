@@ -26,7 +26,11 @@ def expand_inputs(inputs,recursive=False):
     return result
 
 
-def convert_one(path,out,material=None,quantity=None,length_axis='auto',force=False,project=False):
+def convert_one(path,out,material=None,quantity=None,length_axis='auto',force=False,project=False,output_format='nc1'):
+    if output_format=='iges':
+        from core.iges import convert_iges
+        return convert_iges(path,out,force)
+    if output_format!='nc1':raise ValueError('Unsupported output format.')
     from core.step_reader import load_step
     from core.section_detector import detect_section
     from core.feature_extractor import extract_features
@@ -53,7 +57,9 @@ def convert_one(path,out,material=None,quantity=None,length_axis='auto',force=Fa
     return row
 
 
-def cli_convert(paths,output=None,recursive=False,material=None,quantity=None,length_axis='auto',force=False,project=False,report=None,cancel_event=None):
+def cli_convert(paths,output=None,recursive=False,material=None,quantity=None,length_axis='auto',force=False,project=False,report=None,cancel_event=None,output_format='nc1'):
+    if output_format not in ('nc1','iges'):raise ValueError('Unsupported output format.')
+    suffix='.igs' if output_format=='iges' else '.nc1'
     files=expand_inputs(paths,recursive);rows=[];used=set()
     for path in files:
         if cancel_event is not None and cancel_event.is_set():break
@@ -64,20 +70,20 @@ def cli_convert(paths,output=None,recursive=False,material=None,quantity=None,le
                 if Path(root).is_dir():
                     try:rel=path.relative_to(Path(root));break
                     except ValueError:pass
-            out=Path(output)/rel.with_suffix('.nc1')
-        else:out=path.with_suffix('.nc1')
+            out=Path(output)/rel.with_suffix(suffix)
+        else:out=path.with_suffix(suffix)
         try:
             target=str(out.resolve()).casefold()
             if target in used:raise ValueError('Duplicate output name; use separate output folders.')
             used.add(target)
             from core.conversion import isolated_convert
-            row=isolated_convert(path,out,material,quantity,length_axis,force,project,cancel_event=cancel_event)
+            row=isolated_convert(path,out,material,quantity,length_axis,force,project,cancel_event=cancel_event,output_format=output_format)
         except Exception as exc:row={'source':str(path),'output':str(out),'status':'error','error':str(exc)}
         rows.append(row)
         print(f"{row['status'].upper()}: {path.name}: "+(str(out) if row['status']=='ok' else row.get('error','')),flush=True)
     if not files:
         print('No STEP files found.',file=sys.stderr)
-    result={'version':VERSION,'requested':len(files),'total':len(rows),'converted':sum(r['status']=='ok' for r in rows),
+    result={'version':VERSION,'format':output_format,'requested':len(files),'total':len(rows),'converted':sum(r['status']=='ok' for r in rows),
             'cancelled':bool(cancel_event is not None and cancel_event.is_set()),'results':rows}
     if report:atomic_write(report,json.dumps(result,indent=2,ensure_ascii=False,allow_nan=False)+'\n','utf-8')
     print(f"Converted {result['converted']}/{result['requested']} requested files; {result['total']} processed.")
@@ -122,7 +128,8 @@ def main(argv=None):
             data=json.loads(Path(opt.manifest).read_text('utf-8'))
             print(json.dumps(write_ba(Nest(**data),opt.output,Path(opt.manifest).parent),indent=2));return 0
         except Exception as exc:print(str(exc),file=sys.stderr);return 1
-    p=argparse.ArgumentParser(description='Convert individual STEP structural parts to DSTV NC1. No arguments opens the desktop app.')
+    p=argparse.ArgumentParser(description='Convert STEP to DSTV NC1 or IGES geometry. No arguments opens the desktop app.')
+    p.add_argument('--format',choices=('nc1','iges'),default='nc1',help='NC1 machining data or IGES geometry from the original STEP.')
     p.add_argument('files',nargs='+');p.add_argument('-o','--output',help='Output directory; directory input hierarchy is retained.')
     p.add_argument('-r','--recursive',action='store_true');p.add_argument('--material',help='Material grade; never inferred from geometry.')
     p.add_argument('--quantity',type=int,help='Override quantity (default: X<number> filename suffix, otherwise 1).')
@@ -130,6 +137,6 @@ def main(argv=None):
     p.add_argument('--force',action='store_true');p.add_argument('--project',action='store_true',help='Save editable project sidecars, including failed drafts.')
     p.add_argument('--report',help='Write a JSON batch report.');p.add_argument('--version',action='version',version=VERSION)
     opt=p.parse_args(args)
-    return cli_convert(opt.files,opt.output,opt.recursive,opt.material,opt.quantity,opt.length_axis,opt.force,opt.project,opt.report)
+    return cli_convert(opt.files,opt.output,opt.recursive,opt.material,opt.quantity,opt.length_axis,opt.force,opt.project,opt.report,output_format=opt.format)
 
 if __name__=='__main__':raise SystemExit(main())

@@ -1,6 +1,6 @@
 # Customer release gates
 
-Current version: 1.2.0-rc3. **Release candidate. Do not label this build production-ready.**
+Current version: 1.3.0-rc1. **Release candidate. Do not label this build production-ready.**
 
 The 1.0/1.1 converter could classify circular pipe as rectangular HSS. Regenerate
 round-stock outputs with the corrected converter. Do not use those earlier
@@ -8,7 +8,7 @@ round-stock exports as machining input.
 
 | Gate | Required evidence | Current state |
 |---|---|---|
-| Geometry and file integrity | Passing regression suite and per-file archive/readback reports | 53 regression tests passed; final archive/readback reports in VALIDATION.md |
+| Geometry and file integrity | Passing regression suite and per-file archive/readback reports | 60 regression tests passed; final archive/readback reports in VALIDATION.md |
 | Customer recovery and cancellation | Passing recovery, cancellation and support-bundle tests | Core tests passed; desktop integration pending |
 | Windows source application | `Validate-Windows.bat` produces a passing `installation-check.json` | Not run in this Linux environment |
 | Packaged Windows application | `Build-Windows.ps1` passes both source and frozen-app checks | Installer configuration supplied; Windows run pending |
@@ -44,3 +44,5 @@ Only `STEP2NC1-Setup.exe` is the customer setup deliverable. Build-Windows.ps1 b
 The release build also needs review of the signed/unsigned status under the customer's Windows policy. No signing certificate is configured here; an unsigned build may show a Windows reputation prompt. Do not instruct customers to disable security controls.
 
 References: [Inno Setup privileges](https://jrsoftware.org/ishelp/topic_setup_privilegesrequired.htm), [compiler](https://jrsoftware.org/ishelp/topic_compilercmdline.htm), and [setup command line](https://jrsoftware.org/ishelp/topic_setupcmdline.htm).
+
+IGES gate: all 34 direct STEP uploads passed export and geometry readback on Linux. Test coverage includes Boolean difference comparisons for rotated/translated pockets, curved solids, saddle cuts and multiple solids. IGES native Windows checks are required for this version; the receiving TubesT import still requires user acceptance.

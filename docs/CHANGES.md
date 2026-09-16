@@ -1,3 +1,9 @@
+# Changes — 1.3.0-rc1
+
+Added STEP to IGES B-rep export through the desktop and CLI, independent of NC1 section restrictions. Preserves model coordinates and converts STEP units to millimetres. Supports batch conversion, cancellation and protected atomic output publication. Reopens every export and checks solid count, area, volume and bounds. Adds tests for curved parts, saddle cuts, pockets, multiple solids, inch units, Unicode paths and output preservation. Windows source/frozen/installed checks now exercise IGES and the desktop IGES action.
+
+IGES exports original STEP geometry. NC1 editor changes, colors, assembly labels and machining metadata are not transferred. TubesT importer acceptance has not been run here.
+
 # Changes — 1.2.0-rc3
 
 ## Conversion correctness
