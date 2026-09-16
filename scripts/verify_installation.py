@@ -50,7 +50,8 @@ def run(argv=None):
             result=isolated_convert(source,directory/'installation-test.igs',output_format='iges')
             if result.get('status')!='ok':raise RuntimeError(result.get('error','IGES conversion failed.'))
             if result.get('readback')!='passed':raise RuntimeError('IGES readback did not pass.')
-            return 'STEP to IGES worker, solid count, area, volume and model bounds readback passed.'
+            if result.get('encoding')!='trimmed-surfaces':raise RuntimeError('Incorrect IGES encoding.')
+            return 'STEP to trimmed-surface IGES worker, face checks and sewn solid count/volume readback passed.'
         check('IGES conversion',iges_conversion)
         def desktop():
             if not converted:raise RuntimeError('Resolve the CAD conversion failure first.')

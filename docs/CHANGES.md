@@ -1,4 +1,8 @@
-# Changes — 1.3.0-rc1
+## 1.3.0-rc2 — TubesT IGES compatibility
+
+Replaces the rejected solid B-rep IGES encoding with individually exported trimmed surfaces and B-spline planes. Both diagnostic surface variants imported successfully in the user's TubesT; variant A is now the default. Validation retains face count, area and bounds checks, plus sewn closed-solid count and volume checks for solid sources. This confirms one diagnostic part, not universal importer or machining acceptance. Periodic surfaces that produce invalid IGES readback are withheld; no fallback to the rejected B-rep encoding is used. Adaptive volume integration avoids inaccurate fixed-order measurements on curved faces.
+
+# Changes — 1.3.0-rc2
 
 Added STEP to IGES B-rep export through the desktop and CLI, independent of NC1 section restrictions. Preserves model coordinates and converts STEP units to millimetres. Supports batch conversion, cancellation and protected atomic output publication. Reopens every export and checks solid count, area, volume and bounds. Adds tests for curved parts, saddle cuts, pockets, multiple solids, inch units, Unicode paths and output preservation. Windows source/frozen/installed checks now exercise IGES and the desktop IGES action.
 

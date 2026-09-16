@@ -1,6 +1,6 @@
 # Customer release gates
 
-Current version: 1.3.0-rc1. **Release candidate. Do not label this build production-ready.**
+Current version: 1.3.0-rc2. **Release candidate. Do not label this build production-ready.**
 
 The 1.0/1.1 converter could classify circular pipe as rectangular HSS. Regenerate
 round-stock outputs with the corrected converter. Do not use those earlier
@@ -8,10 +8,10 @@ round-stock exports as machining input.
 
 | Gate | Required evidence | Current state |
 |---|---|---|
-| Geometry and file integrity | Passing regression suite and per-file archive/readback reports | 60 regression tests passed; final archive/readback reports in VALIDATION.md |
-| Customer recovery and cancellation | Passing recovery, cancellation and support-bundle tests | Core tests passed; desktop integration pending |
-| Windows source application | `Validate-Windows.bat` produces a passing `installation-check.json` | Not run in this Linux environment |
-| Packaged Windows application | `Build-Windows.ps1` passes both source and frozen-app checks | Installer configuration supplied; Windows run pending |
+| Geometry and file integrity | Passing regression suite and per-file archive/readback reports | 61 regression tests; current surface sample audit recorded separately; final archive/readback reports in VALIDATION.md |
+| Customer recovery and cancellation | Passing recovery, cancellation and support-bundle tests | Core tests passed; rc1 Windows desktop integration passed; rc2 rechecked by CI |
+| Windows source application | `Validate-Windows.bat` produces a passing `installation-check.json` | rc1 Windows source check passed; rc2 CI required |
+| Packaged Windows application | `Build-Windows.ps1` passes both source and frozen-app checks | rc1 installer passed; rc2 pipeline runs source, frozen and installed checks |
 | Visual review | Review the desktop at 100%, 150% and 200% scaling. Confirm dialogs fit and face previews/miters are legible | Pending |
 | Receiving software | Import representative W, C, L, rectangular HSS, plate and supported round-pipe outputs. Confirm stock, orientation, cuts, holes, bevels and quantities against CAD | Pending |
 | Physical acceptance | Select representative approved jobs. Confirm machine setup and resulting dimensions using the receiving system's normal process | Pending |
@@ -45,4 +45,4 @@ The release build also needs review of the signed/unsigned status under the cust
 
 References: [Inno Setup privileges](https://jrsoftware.org/ishelp/topic_setup_privilegesrequired.htm), [compiler](https://jrsoftware.org/ishelp/topic_compilercmdline.htm), and [setup command line](https://jrsoftware.org/ishelp/topic_setupcmdline.htm).
 
-IGES gate: all 34 direct STEP uploads passed export and geometry readback on Linux. Test coverage includes Boolean difference comparisons for rotated/translated pockets, curved solids, saddle cuts and multiple solids. IGES native Windows checks are required for this version; the receiving TubesT import still requires user acceptance.
+IGES gate: the previous B-rep encoding passed internal checks but was rejected by the user's TubesT. Both replacement surface diagnostic variants imported successfully; variant A is now the default. This is acceptance for one part only. Test coverage includes Boolean difference comparisons for rotated/translated pockets, curved solids, saddle cuts and multiple solids. IGES native Windows checks are required for this version; additional receiving TubesT parts still require acceptance.

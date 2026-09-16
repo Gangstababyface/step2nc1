@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 import cadquery as cq
 import pytest
-from core.iges import convert_iges,read_iges,metrics
+from core.iges import convert_iges,read_iges,metrics,reconstruct_solids
 from core.conversion import isolated_convert
 
 
@@ -17,13 +17,19 @@ def shape_for(kind):
     return cq.Compound.makeCompound([cq.Solid.makeBox(10,20,30),cq.Solid.makeBox(7,9,11).translate((100,50,-20))])
 
 
-@pytest.mark.parametrize('kind',['pocket','curved','saddle','assembly'])
+@pytest.mark.parametrize('kind',['pocket','saddle','assembly'])
 def test_iges_roundtrip_geometry(tmp_path,kind):
     shape=shape_for(kind).rotate((0,0,0),(1,2,3),27).translate((123,-456,789))
     source=tmp_path/'part.step';shape.exportStep(str(source));out=tmp_path/'part.igs'
     row=convert_iges(source,out)
     assert row['readback']=='passed'
-    restored=cq.Shape.cast(read_iges(out.read_bytes()))
+    raw=read_iges(out.read_bytes())
+    assert not cq.Shape.cast(raw).Solids()
+    entities={int(line[:8]) for line in out.read_text().splitlines() if len(line)>72 and line[72]=='D'}
+    assert 144 in entities
+    assert not ({186,510,514,108} & entities)
+    assert row['encoding']=='trimmed-surfaces'
+    restored=cq.Shape.cast(reconstruct_solids(raw))
     assert len(restored.Solids())==len(shape.Solids())
     # Independent geometric comparison, not only volume/bounds equality.
     assert shape.cut(restored).Volume()<.01
@@ -65,3 +71,20 @@ def test_iges_cli_preserves_hierarchy(tmp_path):
     assert (out/'sub/part.igs').exists()
     data=json.loads(report.read_text());assert data['format']=='iges' and data['converted']==1
     assert not list(out.rglob('*.nc1'))
+
+
+def test_open_surface_reconstruction_rejected():
+    box=cq.Solid.makeBox(10,20,30)
+    incomplete=cq.Compound.makeCompound(box.Faces()[:-1])
+    with pytest.raises(ValueError,match='open shell|unsewn'):
+        reconstruct_solids(incomplete.wrapped)
+
+
+def test_invalid_periodic_surface_export_is_withheld(tmp_path):
+    # OCCT's surface writer creates an invalid readback for this periodic face.
+    # Do not silently fall back to the B-rep encoding rejected by TubesT.
+    shape=shape_for('curved').rotate((0,0,0),(1,2,3),27).translate((123,-456,789))
+    src=tmp_path/'torus.step';shape.exportStep(str(src));out=tmp_path/'torus.igs'
+    with pytest.raises(ValueError,match='Invalid or empty CAD shape'):
+        convert_iges(src,out)
+    assert not out.exists()
