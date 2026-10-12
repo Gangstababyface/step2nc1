@@ -1,4 +1,4 @@
-"""STEP import through Open CASCADE (CadQuery). Units/placements are handled by OCC."""
+"""Single-solid STEP/IGES import for bounded NC1 analysis."""
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -23,11 +23,27 @@ def load_step(path, length_axis="auto"):
     p = Path(path)
     if not p.is_file():
         raise FileNotFoundError(p)
-    if p.suffix.lower() not in (".step", ".stp"):
-        raise StepParseError("Choose a .step or .stp file")
     try:
-        imported = cq.importers.importStep(str(p))
-        solids = imported.solids().vals()
+        from .cad_import import read_geometry
+        from .iges import metrics, reconstruct_solids
+        shape = read_geometry(p)
+        metrics(shape)
+        if p.suffix.lower() in ('.igs', '.iges'):
+            from OCP.ShapeCustom import ShapeCustom
+            # IGES represents analytic cylinders as surfaces of revolution.
+            # OCCT restores their equivalent elementary surfaces without fitting
+            # splines, inventing missing cuts or changing the exchange file.
+            shape = ShapeCustom.SweptToElementary_s(shape)
+            metrics(shape)
+        imported = cq.Shape.cast(shape)
+        solids = imported.Solids()
+        if p.suffix.lower() in ('.igs', '.iges') and not solids:
+            # Closed surface models can be analysed without guessing missing faces.
+            # Do not increase the 0.001 mm tolerance to force an open model closed.
+            imported = cq.Shape.cast(reconstruct_solids(shape))
+            solids = imported.Solids()
+        if sum(len(s.Faces()) for s in solids) != len(imported.Faces()):
+            raise ValueError('The model contains surfaces outside its solids.')
     except Exception as exc:
         raise StepParseError(f"Open CASCADE could not read {p.name}: {exc}") from exc
     if len(solids) != 1:

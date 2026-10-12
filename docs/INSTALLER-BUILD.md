@@ -1,11 +1,11 @@
-# Installer build status
+# Windows customer installer
 
-The customer deliverable is STEP2NC1-Setup.exe. The local changes provide its installer definition and Windows build/verification workflow. They are not a compiled EXE.
+Version 1.3.0-rc3. The customer deliverable is STEP2NC1-Setup.exe. The source tree is not itself an installer.
 
-Local validation: 60 regression tests passed. Workflow YAML structure and installer configuration invariants checked. Native Windows compilation and install/upgrade/uninstall checks have not run.
+The Windows workflow runs regression tests, source/frozen/installed CAD and desktop checks, compiles with Inno Setup and retains the EXE and SHA256 only after verification succeeds. The current run in GitHub Actions is the authoritative native build result.
 
-The user authorized uploading application source to codex/windows-customer-installer in Gangstababyface/step2nc1 and running the Windows build. Customer CAD, original reference archives, per-file reports and converted customer samples are excluded from the repository update. Build status is recorded by the Windows workflow.
+Setup has no customer dependency downloads, administrator prompt or setup-choice/confirmation pages. The normal non-silent path is tested without clicking any wizard buttons: setup must finish automatically and open a desktop window. Desktop and Start menu shortcuts are checked. A same-version reinstall, installed workflow with Python removed from PATH, uninstall and user-created file preservation are also checked. Cross-version upgrades and organizational Windows policy remain separate qualification.
 
-Build-Windows.ps1 creates the frozen application and compiles packaging/installer.iss with Inno Setup. scripts/Test-WindowsInstaller.ps1 verifies a clean per-user installation, same-version upgrade, full installed CAD and GUI operation with Python removed from PATH, uninstall and preservation of user-created data. The GitHub workflow retains the EXE only after these checks pass. The build account needs Python and Inno Setup. Customers need neither.
+The packaged workflow includes STEP to NC1, STEP to accepted trimmed-surface IGES, inch-unit IGES input to NC1, original IGES byte preservation and both desktop IGES actions. JUnit regression evidence and JSON installation results are retained by the workflow.
 
-The installer is not code-signed yet. Windows reputation policy must be checked before customer distribution. No customer should be asked to disable security controls.
+No signing certificate is configured. The installer is unsigned; Windows reputation controls may show a prompt. Do not bypass security controls.

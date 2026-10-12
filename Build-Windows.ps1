@@ -8,7 +8,8 @@ if (-not (Test-Path '.venv\Scripts\python.exe')) {
 $step2ncPython = Join-Path $PSScriptRoot '.venv\Scripts\python.exe'
 & $step2ncPython -m pip install -r requirements-build.txt
 if ($LASTEXITCODE -ne 0) { throw 'Dependency installation failed.' }
-& $step2ncPython -m pytest -q
+New-Item -ItemType Directory -Force installer-evidence | Out-Null
+& $step2ncPython -m pytest -q --junitxml=installer-evidence/regression-tests.xml
 if ($LASTEXITCODE -ne 0) { throw 'Regression tests failed. No release was built.' }
 & $step2ncPython main.py doctor --gui --output source-installation-check.json
 if ($LASTEXITCODE -ne 0) { throw 'Source desktop verification failed.' }

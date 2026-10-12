@@ -53,6 +53,33 @@ def run(argv=None):
             if result.get('encoding')!='trimmed-surfaces':raise RuntimeError('Incorrect IGES encoding.')
             return 'STEP to trimmed-surface IGES worker, face checks and sewn solid count/volume readback passed.'
         check('IGES conversion',iges_conversion)
+        iges_source=directory/'inch input.IGES'
+        def iges_input():
+            import cadquery as cq
+            import io
+            from OCP.IGESControl import IGESControl_Writer
+            from core.conversion import isolated_convert
+            from core.dstv_reader import read_nc1
+            shape=cq.Solid.makeBox(254,50.8,6.35).cut(cq.Solid.makeCylinder(5,10,(100,25,-2),(0,0,1)))
+            writer=IGESControl_Writer('INCH',0)
+            for face in shape.Faces():
+                if not writer.AddShape(face.wrapped):raise RuntimeError('IGES fixture export failed.')
+            stream=io.BytesIO()
+            if not writer.Write(stream):raise RuntimeError('IGES fixture export failed.')
+            iges_source.write_bytes(stream.getvalue())
+            target=directory/'inch-input.nc1'
+            result=isolated_convert(iges_source,target,material='TEST',project=True)
+            if result.get('status')!='ok':raise RuntimeError(result.get('error','IGES input failed.'))
+            doc=read_nc1(target)
+            if abs(doc.features.section.length_in*25.4-254)>.001 or len(doc.features.holes)!=1:
+                raise RuntimeError('IGES input changed size or holes.')
+            if abs(doc.features.holes[0].diameter_mm-10)>.001:raise RuntimeError('IGES bore changed.')
+            copy=directory/'inch-input_TubeST.igs'
+            result=isolated_convert(iges_source,copy,output_format='iges')
+            if result.get('status')!='ok' or copy.read_bytes()!=iges_source.read_bytes():
+                raise RuntimeError('Original IGES bytes were not preserved.')
+            return 'Inch-unit trimmed-surface IGES imported to NC1 with correct size/hole and copied byte-for-byte for TubeST.'
+        imported_iges=check('IGES input and original-file preservation',iges_input)
         def desktop():
             if not converted:raise RuntimeError('Resolve the CAD conversion failure first.')
             import tkinter as tk
@@ -93,8 +120,19 @@ def run(argv=None):
                     if app.busy or not reports:raise RuntimeError('Desktop IGES action did not finish.')
                     result=json.loads(reports[0].read_text())
                     if result['converted']!=1 or not (iges_directory/'installation-test.igs').is_file():raise RuntimeError('Desktop IGES export failed.')
+                    if not imported_iges:raise RuntimeError('Resolve the IGES input failure first.')
+                    with patch('gui.app.filedialog.askopenfilename',return_value=str(iges_source)),patch('gui.app.messagebox.askyesno',return_value=True):
+                        app.open_file();deadline=time.monotonic()+30
+                        while app.busy and time.monotonic()<deadline:root.update();time.sleep(.01)
+                    if app.busy or app.source!=str(iges_source.resolve()) or len(app.fs.holes)!=1:
+                        raise RuntimeError('Desktop IGES open/analyse failed.')
+                    with patch('gui.app.filedialog.askopenfilenames',return_value=(str(iges_source),)),patch('gui.app.filedialog.askdirectory',return_value=str(iges_directory)),patch.object(app,'batch_results',side_effect=lambda path:reports.append(path)):
+                        app.export_iges();deadline=time.monotonic()+30
+                        while app.busy and time.monotonic()<deadline:root.update();time.sleep(.01)
+                    if app.busy or (iges_directory/'inch input_TubeST.igs').read_bytes()!=iges_source.read_bytes():
+                        raise RuntimeError('Desktop IGES preservation failed.')
                     if callback_errors:raise RuntimeError('; '.join(callback_errors))
-                    return 'Desktop opened, displayed the part, edited quantity, saved/reopened, exported, autosaved, cancelled a job and exported IGES through the desktop action.'
+                    return 'Desktop opened, displayed/edited/saved/exported a part, autosaved, cancelled a job, exported STEP to IGES, opened IGES for NC1 analysis and preserved original IGES bytes through the desktop action.'
                 finally:
                     if app:app.finish_close()
                     else:root.destroy()

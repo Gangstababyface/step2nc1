@@ -1,4 +1,4 @@
-"""STEP to IGES trimmed-surface exchange, independent of NC1 profile/feature limits."""
+"""TubeST IGES exchange: accepted STEP encoding, original IGES kept byte-for-byte."""
 import io
 import math
 import os
@@ -66,43 +66,46 @@ def reconstruct_solids(shape):
 
 
 def convert_iges(path,out,force=False):
-    from OCP.STEPControl import STEPControl_Reader
     from OCP.IGESControl import IGESControl_Writer
-    from OCP.IFSelect import IFSelect_RetDone
+    from .cad_import import CAD_EXTENSIONS, read_geometry
     path=Path(path);out=Path(out)
-    if path.suffix.lower() not in ('.step','.stp'):raise ValueError('IGES conversion requires a STEP source file.')
+    if path.suffix.lower() not in CAD_EXTENSIONS:raise ValueError('IGES export requires a STEP or IGES source file.')
     if out.suffix.lower() not in ('.igs','.iges'):raise ValueError('IGES output must use .igs or .iges.')
     if path.resolve()==out.resolve():raise ValueError('Output cannot replace the source.')
     if out.exists() and not force:raise FileExistsError(f'{out} exists; use --force to replace it.')
-    reader=STEPControl_Reader()
-    if reader.ReadStream('source.step',io.BytesIO(path.read_bytes()))!=IFSelect_RetDone:
-        raise ValueError('STEP file could not be read.')
-    reader.SetSystemLengthUnit(1.0)  # millimetres; STEP source units are converted during transfer
-    if reader.TransferRoots()==0:raise ValueError('STEP contains no transferable geometry.')
-    shape=reader.OneShape();before=metrics(shape)
+    original_iges=path.suffix.lower() in ('.igs','.iges')
+    # Read the exact byte snapshot that will be published for IGES inputs.
+    # Preserve SolidWorks trimming, unit declarations and entity representation.
+    source_data=path.read_bytes() if original_iges else None
+    shape=read_iges(source_data) if original_iges else read_geometry(path)
+    before=metrics(shape)
     import cadquery as cq
     from OCP.Interface import Interface_Static
-    writer=IGESControl_Writer('MM',0)
     # Matches the A diagnostic accepted in TubesT: individual trimmed faces,
     # B-spline planes, millimetres. Restore OCCT's process-global setting.
-    previous=Interface_Static.IVal_s('write.iges.plane.mode')
-    try:
-        if not Interface_Static.SetIVal_s('write.iges.plane.mode',1):
-            raise ValueError('IGES plane configuration failed.')
-        for face in cq.Shape.cast(shape).Faces():
-            if not writer.AddShape(face.wrapped):raise ValueError('IGES writer rejected a face.')
-        stream=io.BytesIO()
-        if not writer.Write(stream):raise ValueError('IGES writer failed.')
-    finally:
-        Interface_Static.SetIVal_s('write.iges.plane.mode',previous)
-    data=stream.getvalue();restored=read_iges(data);after=metrics(restored)
+    if original_iges:
+        data=source_data
+    else:
+        writer=IGESControl_Writer('MM',0)
+        previous=Interface_Static.IVal_s('write.iges.plane.mode')
+        try:
+            if not Interface_Static.SetIVal_s('write.iges.plane.mode',1):
+                raise ValueError('IGES plane configuration failed.')
+            for face in cq.Shape.cast(shape).Faces():
+                if not writer.AddShape(face.wrapped):raise ValueError('IGES writer rejected a face.')
+            stream=io.BytesIO()
+            if not writer.Write(stream):raise ValueError('IGES writer failed.')
+        finally:
+            Interface_Static.SetIVal_s('write.iges.plane.mode',previous)
+        data=stream.getvalue()
+    restored=read_iges(data);after=metrics(restored)
     if before['faces']!=after['faces']:raise ValueError('IGES readback changed the face count.')
     if not math.isclose(before['area_mm2'],after['area_mm2'],rel_tol=1e-5,abs_tol=1e-3):
         raise ValueError('IGES readback changed area_mm2.')
     if any(abs(a-b)>.01 for a,b in zip(before['bounds_mm'],after['bounds_mm'])):
         raise ValueError('IGES readback changed the model bounds by more than 0.01 mm.')
     reconstructed=None
-    if before['solids']:
+    if before['solids'] and not original_iges:
         reconstructed=metrics(reconstruct_solids(restored))
         if before['solids']!=reconstructed['solids']:
             raise ValueError('IGES sewn readback changed the solid count.')
@@ -120,5 +123,7 @@ def convert_iges(path,out,force=False):
         if os.path.exists(temp):os.unlink(temp)
     return {'source':str(path),'output':str(out),'status':'ok','format':'iges',
             'source_geometry':before,'output_geometry':after,'readback':'passed',
-            'encoding':'trimmed-surfaces','reconstructed_geometry':reconstructed,
-            'warnings':['Geometry only. NC1 editor changes, manufacturing data, colors and assembly names are not exported.']}
+            'encoding':'source-preserved' if original_iges else 'trimmed-surfaces',
+            'source_preserved':original_iges,'reconstructed_geometry':reconstructed,
+            'warnings':(['Original IGES bytes, units and placement preserved. Importability still depends on the source file.']
+                        if original_iges else ['Geometry only. NC1 editor changes, manufacturing data, colors and assembly names are not exported.'])}

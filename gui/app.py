@@ -22,6 +22,7 @@ from core.recovery import RecoveryStore,user_data_dir
 from core.diagnostics import diagnose
 from core.version import VERSION
 from core.stock_preview import face_span,end_outline
+from core.cad_import import CAD_EXTENSIONS, CAD_FILETYPES
 
 FACES=('v','o','u','h')
 CONTOURS={'AK':'outer_contours','IK':'inner_contours','KO':'scribe_contours','PU':'powder_contours'}
@@ -54,12 +55,12 @@ class App:
         style.configure('TButton',padding=(10,5));style.configure('Treeview',rowheight=25)
         bar=ttk.Frame(self.root,padding=8);bar.pack(fill='x')
         self.buttons=[]
-        for text,cmd in [('Open',self.open_file),('Save project',self.save),('Export NC1',self.export),('Batch NC1',self.batch),('STEP to IGES',self.export_iges)]:
+        for text,cmd in [('Open',self.open_file),('Save project',self.save),('Export NC1',self.export),('Batch NC1',self.batch),('TubeST IGES',self.export_iges)]:
             b=ttk.Button(bar,text=text,command=cmd);b.pack(side='left',padx=3);self.buttons.append(b)
         self.cancel_button=ttk.Button(bar,text='Cancel',command=self.cancel_job,state='disabled');self.cancel_button.pack(side='left',padx=3)
         ttk.Button(bar,text='Recover draft',command=self.offer_recovery).pack(side='left',padx=3)
         ttk.Button(bar,text='Support report',command=self.support_report).pack(side='left',padx=3)
-        self.title=ttk.Label(bar,text='Open STEP, NC1, or a saved project',font=('Segoe UI',11));self.title.pack(side='left',padx=15)
+        self.title=ttk.Label(bar,text='Open STEP / IGES / NC1 / project',font=('Segoe UI',11));self.title.pack(side='left',padx=15)
         panes=ttk.Panedwindow(self.root,orient='horizontal');panes.pack(fill='both',expand=True,padx=10)
         left=ttk.Frame(panes,width=290);panes.add(left,weight=0)
         scroll=tk.Canvas(left,highlightthickness=0,width=285);sb=ttk.Scrollbar(left,orient='vertical',command=scroll.yview)
@@ -89,9 +90,9 @@ class App:
         for label,key in [('Order','order_number'),('Drawing','drawing_number'),('Phase','phase_number'),('Piece / mark','piece_number'),('Material grade','steel_quality'),('Quantity','quantity'),('Info 1','text_info_1'),('Info 2','text_info_2'),('Info 3','text_info_3'),('Info 4','text_info_4')]:entry(label,key)
         title('End miters | degrees')
         for label,key in [('Web start','web_start_deg'),('Web end','web_end_deg'),('Flange start','flange_start_deg'),('Flange end','flange_end_deg')]:entry(label,key,'0')
-        title('STEP analysis')
+        title('CAD analysis')
         entry('Source length axis','axis','auto',['auto','x','y','z'])
-        ttk.Button(form,text='Re-analyze STEP',command=self.redetect).grid(row=row,column=0,columnspan=2,sticky='ew',pady=4);row+=1
+        ttk.Button(form,text='Re-analyze CAD',command=self.redetect).grid(row=row,column=0,columnspan=2,sticky='ew',pady=4);row+=1
         ttk.Button(form,text='Apply edits / refresh',command=self.apply).grid(row=row,column=0,columnspan=2,sticky='ew',pady=4)
         right=ttk.Frame(panes);panes.add(right,weight=1)
         viewbar=ttk.Frame(right,padding=5);viewbar.pack(fill='x')
@@ -222,7 +223,7 @@ class App:
 
     def open_file(self):
         if self.busy or not self.confirm_discard():return
-        path=filedialog.askopenfilename(filetypes=[('STEP / NC1 / Project','*.step *.stp *.STEP *.STP *.nc1 *.NC1 *.json'),('All files','*.*')])
+        path=filedialog.askopenfilename(filetypes=CAD_FILETYPES+[('NC1 / Project','*.nc1 *.NC1 *.json'),('All files','*.*')])
         if not path:return
         axis=self.vars['axis'].get()
         def read():
@@ -310,14 +311,14 @@ class App:
         except Exception as exc:messagebox.showerror('Export needs attention',str(exc),parent=self.root);self.tabs.select(3)
 
     def redetect(self):
-        if self.busy or not self.source.lower().endswith(('.step','.stp')):return
+        if self.busy or not self.source.lower().endswith(CAD_EXTENSIONS):return
         if not self.confirm_discard():return
         path=self.source;axis=self.vars['axis'].get()
         self.run_job(lambda:(*self.analyze(path,axis,self.cancel_event),None),self.loaded)
 
     def export_iges(self):
         if self.busy:return
-        paths=filedialog.askopenfilenames(title='Select original STEP models for IGES export',filetypes=[('STEP','*.step *.stp *.STEP *.STP')])
+        paths=filedialog.askopenfilenames(title='TubeST IGES: STEP export or unchanged IGES copy',filetypes=CAD_FILETYPES)
         if not paths:return
         output=filedialog.askdirectory(title='Save IGES geometry files')
         if not output:return
@@ -328,7 +329,7 @@ class App:
 
     def batch(self):
         if self.busy:return
-        paths=filedialog.askopenfilenames(filetypes=[('STEP','*.step *.stp *.STEP *.STP')])
+        paths=filedialog.askopenfilenames(filetypes=CAD_FILETYPES)
         if not paths:return
         output=filedialog.askdirectory(title='Choose output directory')
         if not output:return
@@ -371,7 +372,7 @@ class App:
         tree.bind('<<TreeviewSelect>>',show)
         if data.get('format','nc1')=='nc1':
             ttk.Button(top,text='Review selected draft',command=review).pack(side='left',padx=10,pady=8)
-        else:ttk.Label(top,text='IGES contains the original STEP geometry. NC1 editor changes are not included.').pack(side='left',padx=10,pady=8)
+        else:ttk.Label(top,text='STEP: trimmed surfaces. IGES input: unchanged copy. NC1 edits are not included.').pack(side='left',padx=10,pady=8)
         ttk.Button(top,text='Close',command=top.destroy).pack(side='right',padx=10,pady=8)
 
     def choose_profile(self):

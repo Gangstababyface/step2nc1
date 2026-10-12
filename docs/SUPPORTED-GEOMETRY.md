@@ -18,3 +18,9 @@ A timeout or kernel failure is a processing failure, not a determination that th
 The normalized part starts at X=0. Faces v/h use section depth; o/u use width. RO uses face v over circumference πD. Header miter previews show the stock envelope. Symmetric sections can have equivalent alternate orientations; compare with the receiving system.
 
 DSTV+ export creates an explicit ordered BA/PI manifest. It is not a nesting optimizer. It requires compatible stock, grade and dimensions and currently rejects nonzero miter headers. Confirm kerf and trim accounting in the receiving system.
+
+## IGES inputs
+
+NC1 accepts one valid solid, including analytic IGES surfaces that sew closed within 0.001 mm. Equivalent cylindrical revolution surfaces are canonicalized without approximating spline geometry. Open surfaces and general B-spline boundaries are rejected for NC1. Source files remain unchanged. Unicode filenames can be imported; DSTV header text must be ASCII.
+
+The separate TubeST IGES action exports STEP using the accepted trimmed-surface encoding. Existing IGES input is validated and copied byte-for-byte, preserving SolidWorks units, placement and trimming. That copy does not require a closed solid and does not repair a previously unimportable IGES source. Internal CAD readback is not universal TubeST acceptance.

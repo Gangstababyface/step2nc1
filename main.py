@@ -8,6 +8,7 @@ from core.dstv_writer import default_header_from_filename,write_nc1,atomic_write
 from core.validation import validate_features
 
 from core.version import VERSION
+from core.cad_import import CAD_EXTENSIONS
 
 
 def expand_inputs(inputs,recursive=False):
@@ -18,7 +19,7 @@ def expand_inputs(inputs,recursive=False):
             path=Path(value)
             if path.is_dir():
                 paths=sorted(path.rglob('*') if recursive else path.iterdir())
-                paths=[p for p in paths if p.suffix.lower() in ('.step','.stp') and p.is_file()]
+                paths=[p for p in paths if p.suffix.lower() in CAD_EXTENSIONS and p.is_file()]
             else:paths=[path]
             for p in paths:
                 key=str(p.resolve())
@@ -63,6 +64,7 @@ def cli_convert(paths,output=None,recursive=False,material=None,quantity=None,le
     files=expand_inputs(paths,recursive);rows=[];used=set()
     for path in files:
         if cancel_event is not None and cancel_event.is_set():break
+        output_name=path.stem+'_TubeST.igs' if output_format=='iges' and path.suffix.lower() in ('.igs','.iges') else path.with_suffix(suffix).name
         if output:
             # Preserve hierarchy for directory inputs; individual files retain their stem.
             rel=Path(path.name)
@@ -70,8 +72,8 @@ def cli_convert(paths,output=None,recursive=False,material=None,quantity=None,le
                 if Path(root).is_dir():
                     try:rel=path.relative_to(Path(root));break
                     except ValueError:pass
-            out=Path(output)/rel.with_suffix(suffix)
-        else:out=path.with_suffix(suffix)
+            out=Path(output)/rel.with_name(output_name)
+        else:out=path.with_name(output_name)
         try:
             target=str(out.resolve()).casefold()
             if target in used:raise ValueError('Duplicate output name; use separate output folders.')
@@ -82,7 +84,7 @@ def cli_convert(paths,output=None,recursive=False,material=None,quantity=None,le
         rows.append(row)
         print(f"{row['status'].upper()}: {path.name}: "+(str(out) if row['status']=='ok' else row.get('error','')),flush=True)
     if not files:
-        print('No STEP files found.',file=sys.stderr)
+        print('No STEP or IGES files found.',file=sys.stderr)
     result={'version':VERSION,'format':output_format,'requested':len(files),'total':len(rows),'converted':sum(r['status']=='ok' for r in rows),
             'cancelled':bool(cancel_event is not None and cancel_event.is_set()),'results':rows}
     if report:atomic_write(report,json.dumps(result,indent=2,ensure_ascii=False,allow_nan=False)+'\n','utf-8')
@@ -128,8 +130,8 @@ def main(argv=None):
             data=json.loads(Path(opt.manifest).read_text('utf-8'))
             print(json.dumps(write_ba(Nest(**data),opt.output,Path(opt.manifest).parent),indent=2));return 0
         except Exception as exc:print(str(exc),file=sys.stderr);return 1
-    p=argparse.ArgumentParser(description='Convert STEP to DSTV NC1 or IGES geometry. No arguments opens the desktop app.')
-    p.add_argument('--format',choices=('nc1','iges'),default='nc1',help='NC1 machining data or IGES geometry from the original STEP.')
+    p=argparse.ArgumentParser(description='Convert STEP/IGES to DSTV NC1 or prepare IGES geometry for TubeST. No arguments opens the desktop app.')
+    p.add_argument('--format',choices=('nc1','iges'),default='nc1',help='NC1 machining data; or trimmed-surface STEP export / unchanged original IGES copy.')
     p.add_argument('files',nargs='+');p.add_argument('-o','--output',help='Output directory; directory input hierarchy is retained.')
     p.add_argument('-r','--recursive',action='store_true');p.add_argument('--material',help='Material grade; never inferred from geometry.')
     p.add_argument('--quantity',type=int,help='Override quantity (default: X<number> filename suffix, otherwise 1).')

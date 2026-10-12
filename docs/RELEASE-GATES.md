@@ -1,6 +1,6 @@
 # Customer release gates
 
-Current version: 1.3.0-rc2. **Release candidate. Do not label this build production-ready.**
+Current version: 1.3.0-rc3. See the current GitHub Actions build for native verification results. **Release candidate. Do not label this build production-ready.**
 
 The 1.0/1.1 converter could classify circular pipe as rectangular HSS. Regenerate
 round-stock outputs with the corrected converter. Do not use those earlier
@@ -46,3 +46,5 @@ The release build also needs review of the signed/unsigned status under the cust
 References: [Inno Setup privileges](https://jrsoftware.org/ishelp/topic_setup_privilegesrequired.htm), [compiler](https://jrsoftware.org/ishelp/topic_compilercmdline.htm), and [setup command line](https://jrsoftware.org/ishelp/topic_setupcmdline.htm).
 
 IGES gate: the previous B-rep encoding passed internal checks but was rejected by the user's TubesT. Both replacement surface diagnostic variants imported successfully; variant A is now the default. This is acceptance for one part only. Test coverage includes Boolean difference comparisons for rotated/translated pockets, curved solids, saddle cuts and multiple solids. IGES native Windows checks are required for this version; additional receiving TubesT parts still require acceptance.
+
+rc3 adds normal non-silent one-click install/automatic launch/shortcut checks, STEP and IGES inputs, exact preservation of original SolidWorks IGES bytes, and native desktop IGES-input integration. The fixture suite includes explicit refusals for unsupported spline/open-surface NC1 input. Broad customer STEP exchange tests can still fail the existing validity, area or closed-solid readback gates; failures are retained rather than bypassed.

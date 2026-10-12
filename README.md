@@ -1,17 +1,16 @@
-# STEP2NC1 — 1.3.0-rc2
+# STEP2NC1 — 1.3.0-rc3
 
 A Windows-friendly desktop editor and command-line converter for individual,
-straight structural members. Uses Open CASCADE through CadQuery for STEP units,
+straight structural members. Uses Open CASCADE through CadQuery for STEP/IGES units,
 placements, solid topology, and exact line/circular-arc geometry.
 
-**Release candidate:** automated Linux checks are supplied; Windows desktop, packaged
-application, receiving CAM and physical acceptance remain pending. See
+**Release candidate:** the Windows workflow verifies source and frozen desktop operation, normal one-click installation, automatic launch, shortcuts, upgrade and uninstall. Receiving CAM and physical acceptance remain separate gates. See
 [release gates](docs/RELEASE-GATES.md) before distribution. Regenerate any round-stock
 outputs from older versions; the round-section classifier has been corrected.
 
-## STEP to IGES
+## STEP / IGES input for TubeST
 
-Use **STEP to IGES** in the toolbar, choose one or more original STEP files, then choose an output folder. The result is `.igs` geometry suitable for testing with the IGES/IGS importer in the supplied TubesT dialog. This operation does not depend on the NC1 profile detector and preserves the source model position and scale. The current NC1 editor's changes are not applied.
+Use **TubeST IGES** in the toolbar, choose one or more STEP or IGES files, then choose an output folder. The result is `.igs` geometry suitable for testing with the IGES/IGS importer in the supplied TubesT dialog. This operation does not depend on the NC1 profile detector and preserves the source model position and scale. The current NC1 editor's changes are not applied.
 
 Export uses individual IGES trimmed surfaces with B-spline planes in millimetres. This encoding was accepted in a user TubesT test. Every result is reopened and checked for valid faces, face count, bounds and area. For solid source models, faces are sewn back into closed solids for solid-count and volume checks before publication. The IGES file itself contains surfaces, not solid topology. Original colors, assembly names, fabrication metadata and machining instructions are not preserved. The receiving TubesT importer still needs an acceptance check; an internal readback does not establish compatibility with every CAD importer.
 
@@ -20,11 +19,13 @@ STEP2NC1-cli.exe "part.step" --format iges -o "C:\Jobs\IGES"
 STEP2NC1-cli.exe "C:\Jobs\STEP" --recursive --format iges -o "C:\Jobs\IGES" --report iges-report.json
 ```
 
+IGES input in the TubeST IGES action is copied byte-for-byte after CAD readback, preserving original units and the previously accepted SolidWorks representation. Copies use `<name>_TubeST.igs`. NC1 analysis can import one valid IGES solid or closed surfaces sewn within 0.001 mm. General B-spline boundaries, open models and unsupported machining remain explicit NC1 blockers.
+
 Supported outputs are NC1 and IGES. SAT, IFC, STEPX and proprietary TubesT/Tekla/PCD/Excel imports are not claimed as exports. They require their own format specifications, SDKs or importer-specific templates.
 
 ## Customer installation
 
-The customer deliverable is **STEP2NC1-Setup.exe**. Open it, click Install, then use the desktop or Start menu shortcut. It contains the Python runtime, Tk and CAD dependencies. Customers do not install Python, run pip, or use batch scripts. It supports per-user installation, in-place updates and uninstall through Windows Settings.
+The customer deliverable is **STEP2NC1-Setup.exe**. Double-click it. Setup immediately installs and opens the application with no Next/Install buttons. Then use the desktop or Start menu shortcut. It contains the Python runtime, Tk and CAD dependencies. Customers do not install Python, run pip, or use batch scripts. It supports per-user installation, in-place updates and uninstall through Windows Settings.
 
 The installer must be built and verified on Windows. The source ZIP is a developer package, not the customer installer. The Windows workflow creates an installer artifact only after regression, frozen-app and install/upgrade/uninstall checks pass. Do not rename a source ZIP or batch file to EXE.
 
@@ -56,7 +57,7 @@ a prebuilt standalone executable.
 
 ## Implemented workflow
 
-- Import one STEP solid; normalize translated/rotated geometry to a consistent
+- Import one STEP or supported IGES solid; normalize translated/rotated geometry to a consistent
   millimetre part frame. The original-to-part transform is retained.
 - Measure W/I beams, U channels, L angles, rectangular/square HSS, flat plate and round pipe. Round pipe supports square
   ends or a single planar miter at each end; bores, saddles and stepped ends are rejected.

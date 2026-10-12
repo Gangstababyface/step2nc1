@@ -1,5 +1,5 @@
 #ifndef AppVersion
-  #define AppVersion "1.3.0-rc2"
+  #define AppVersion "1.3.0-rc3"
 #endif
 
 [Setup]
@@ -16,7 +16,7 @@ MinVersion=10.0
 DisableWelcomePage=yes
 DisableDirPage=yes
 DisableProgramGroupPage=yes
-DisableReadyPage=no
+DisableReadyPage=yes
 DisableFinishedPage=yes
 DisableStartupPrompt=yes
 UninstallDisplayIcon={app}\STEP2NC1.exe
