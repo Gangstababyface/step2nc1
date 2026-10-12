@@ -38,3 +38,20 @@ Name: "{userdesktop}\STEP2NC1"; Filename: "{app}\STEP2NC1.exe"; WorkingDir: "{us
 
 [Run]
 Filename: "{app}\STEP2NC1.exe"; WorkingDir: "{userdocs}"; Flags: nowait skipifsilent
+
+[Code]
+procedure CurPageChanged(CurPageID: Integer);
+begin
+  { Inno intentionally retains Ready when every earlier page is disabled.
+    Queue its normal Install action once the window's message loop starts. }
+  if (CurPageID = wpReady) and not WizardSilent then
+  begin
+    WizardForm.PageNameLabel.Caption := 'Installing STEP2NC1';
+    WizardForm.PageDescriptionLabel.Caption := 'Setup starts automatically.';
+    WizardForm.ReadyMemo.Visible := False;
+    WizardForm.NextButton.Visible := False;
+    WizardForm.BackButton.Visible := False;
+    Log('Starting one-click installation automatically.');
+    PostMessage(WizardForm.NextButton.Handle, $00F5, 0, 0); { BM_CLICK }
+  end;
+end;
