@@ -6,6 +6,21 @@ $step2ncApp = Join-Path $step2ncTestRoot 'Installed App'
 $step2ncEvidence = Join-Path $PSScriptRoot '../installer-evidence'
 New-Item -ItemType Directory -Force $step2ncTestRoot,$step2ncEvidence | Out-Null
 $step2ncEvidence = (Resolve-Path $step2ncEvidence).Path
+Add-Type -TypeDefinition @'
+using System;
+using System.Text;
+using System.Runtime.InteropServices;
+public static class Step2NC1Paths {
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    public static extern uint GetLongPathName(string path, StringBuilder buffer, uint size);
+}
+'@
+function Get-LongPath([string]$Path) {
+    $buffer = New-Object System.Text.StringBuilder 32768
+    $length = [Step2NC1Paths]::GetLongPathName($Path, $buffer, 32768)
+    if ($length -eq 0 -or $length -ge 32768) { throw "Could not resolve the Windows path: $Path" }
+    return $buffer.ToString()
+}
 function Invoke-Setup([string]$LogName, [bool]$Interactive = $false) {
     $step2ncLog = Join-Path $step2ncEvidence $LogName
     $step2ncArgs = @('/NORESTART',"/DIR=`"$step2ncApp`"", "/LOG=`"$step2ncLog`"")
@@ -40,7 +55,10 @@ try {
     foreach ($folder in @([Environment]::GetFolderPath('Desktop'),[Environment]::GetFolderPath('Programs'))) {
         $link = Join-Path $folder 'STEP2NC1.lnk'
         if (-not (Test-Path $link)) { throw "Customer shortcut is missing: $link" }
-        if ($step2ncShell.CreateShortcut($link).TargetPath -ne "$step2ncApp\STEP2NC1.exe") { throw 'Customer shortcut targets the wrong application.' }
+        $target = $step2ncShell.CreateShortcut($link).TargetPath
+        # Shell links may expand RUNNER~1 while TEMP still contains the 8.3 alias.
+        # Compare the actual Windows long paths, not their original spellings.
+        if ((Get-LongPath $target) -ne (Get-LongPath "$step2ncApp\STEP2NC1.exe")) { throw "Customer shortcut targets the wrong application: $target" }
     }
     # Ensure a same-version upgrade preserves files the application did not install.
     'User data must survive upgrade and uninstall.' | Set-Content "$step2ncApp/user-project-preservation.txt"
